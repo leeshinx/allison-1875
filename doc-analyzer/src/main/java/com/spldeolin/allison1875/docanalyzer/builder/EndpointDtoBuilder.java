@@ -1,13 +1,13 @@
 package com.spldeolin.allison1875.docanalyzer.builder;
 
-import java.util.Collection;
-import org.springframework.web.bind.annotation.RequestMethod;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.spldeolin.allison1875.docanalyzer.dto.EndpointDto;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.Collection;
 
 /**
  * @author Deolin 2020-06-01
@@ -44,10 +44,15 @@ public class EndpointDtoBuilder {
             dto.setHandlerSimpleName(handlerSimpleName);
             dto.setDescriptionLines(descriptionLines);
             dto.setUrl(combinedUrl);
-            if (combinedVerbs.contains(RequestMethod.POST)) {
-                dto.setHttpMethod("post");
-            } else {
-                dto.setHttpMethod(Iterables.getFirst(combinedUrls, null));
+            dto.setHttpMethod("post");
+            if (combinedVerbs.contains(RequestMethod.GET)) {
+                dto.setHttpMethod("get");
+            }
+            if (combinedVerbs.contains(RequestMethod.PUT)) {
+                dto.setHttpMethod("put");
+            }
+            if (combinedVerbs.contains(RequestMethod.DELETE)) {
+                dto.setHttpMethod("delete");
             }
             dto.setIsDeprecated(isDeprecated);
             dto.setRequestBodyJsonSchema(requestBodyJsonSchema);

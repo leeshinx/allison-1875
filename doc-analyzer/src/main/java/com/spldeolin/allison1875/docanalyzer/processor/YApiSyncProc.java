@@ -1,10 +1,5 @@
 package com.spldeolin.allison1875.docanalyzer.processor;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +22,9 @@ import com.spldeolin.allison1875.docanalyzer.yapi.javabean.CommonRespDto;
 import com.spldeolin.allison1875.docanalyzer.yapi.javabean.InterfaceListMenuRespDto;
 import com.spldeolin.allison1875.docanalyzer.yapi.javabean.ProjectGetRespDto;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 将endpoints同步到YApi
@@ -88,11 +86,9 @@ public class YApiSyncProc {
             }
             String yapiDesc = endpoint.toStringPrettily();
 
-
-            String reqJs = toJson(endpoint.getRequestBodyJsonSchema());
+            List<Map<String, String>> reqQuery = toQueryList(endpoint.getRequestBodyJsonSchema());
             String respJs = toJson(endpoint.getResponseBodyJsonSchema());
-
-            this.createYApiInterface(title, endpoint.getUrl(), reqJs, respJs, yapiDesc, endpoint.getHttpMethod(),
+            this.createYApiInterface(title, endpoint.getUrl(), reqQuery, respJs, yapiDesc, endpoint.getHttpMethod(),
                     catName2catId.get(endpoint.getCat()));
         }
     }
@@ -112,6 +108,28 @@ public class YApiSyncProc {
             json = JsonUtils.toJson(bodyJsonSchema);
         }
         return json;
+    }
+
+    private List<Map<String, String>> toQueryList(JsonSchema bodyJsonSchema) {
+        List<Map<String, String>> list = new ArrayList<>();
+        if (bodyJsonSchema != null) {
+            // jpdv -> Pretty String
+            JsonSchemaTraverseUtils.traverse("根节点", bodyJsonSchema, (propertyName, jsonSchema, parentJsonSchema) -> {
+                JsonPropertyDescriptionValueDto jpdv = JsonUtils
+                        .toObjectSkipNull(jsonSchema.getDescription(), JsonPropertyDescriptionValueDto.class);
+                if (jpdv != null) {
+                    jsonSchema.setDescription(jpdv.toStringPrettily());
+                }
+                Map<String, String> paramMap = new HashMap<>();
+                paramMap.put("required", "0");
+                paramMap.put("name", propertyName);
+                paramMap.put("example", "");
+                paramMap.put("desc", jpdv.toStringPrettily());
+                list.add(paramMap);
+            });
+
+        }
+        return list;
     }
 
     public Map<String, Long> getYapiCatIdsEachName() {
@@ -189,7 +207,7 @@ public class YApiSyncProc {
         log.info(resp);
     }
 
-    public void createYApiInterface(String title, String url, String requestBodyJsonSchema,
+    public void createYApiInterface(String title, String url, List<Map<String, String>> reqQuery,
             String responseBodyJsonSchema, String description, String httpMethod, Long catId) {
         Map<String, Object> form = Maps.newHashMap();
         form.put("title", title);
@@ -197,7 +215,7 @@ public class YApiSyncProc {
         form.put("status", "done");
         form.put("req_body_type", "json");
         form.put("req_body_is_json_schema", true);
-        form.put("req_body_other", requestBodyJsonSchema);
+        form.put("req_query", reqQuery);
         form.put("res_body_type", "json");
         form.put("res_body_is_json_schema", true);
         form.put("res_body", responseBodyJsonSchema);
@@ -208,6 +226,7 @@ public class YApiSyncProc {
         form.put("method", httpMethod);
         form.put("catid", catId);
         form.put("token", token);
+        log.info(JsonUtils.toJson(form));
         String resp = HttpUtils.postJson(YApiSyncProc.url + "/api/interface/save", JsonUtils.toJson(form));
         log.info(resp);
     }

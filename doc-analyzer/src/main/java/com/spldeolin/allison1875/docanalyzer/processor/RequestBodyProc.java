@@ -69,7 +69,7 @@ class RequestBodyProc {
                 }
 
                 if (!isRequestBody) {
-                    log.warn("方法[{}]存在RequestBody以外的参数[{}]，忽略", name, parameter);
+                    result = parameter.getType().resolve();
                 }
             } catch (Exception e) {
                 log.error(e);

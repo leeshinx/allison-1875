@@ -1,21 +1,22 @@
 package com.spldeolin.allison1875.docanalyzer.processor;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.ListIterator;
+import com.google.common.collect.Lists;
+import com.spldeolin.allison1875.base.util.StringUtils;
+import com.spldeolin.allison1875.docanalyzer.DocAnalyzerConfig;
+import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import com.google.common.collect.Lists;
-import com.spldeolin.allison1875.base.util.StringUtils;
-import com.spldeolin.allison1875.docanalyzer.DocAnalyzerConfig;
-import lombok.Getter;
+
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * 内聚了 对请求URL和请求动词解析的功能
@@ -63,6 +64,7 @@ class RequestMappingProc {
     private RequestMapping findRequestMappingAnnoOrElseNull(AnnotatedElement annotated) {
         return AnnotatedElementUtils.findMergedAnnotation(annotated, RequestMapping.class);
     }
+
 
     private String[] findValueFromAnno(RequestMapping controllerRequestMapping) {
         return controllerRequestMapping == null ? new String[0] : controllerRequestMapping.value();
