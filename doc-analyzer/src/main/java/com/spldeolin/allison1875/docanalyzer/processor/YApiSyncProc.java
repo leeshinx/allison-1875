@@ -117,14 +117,16 @@ public class YApiSyncProc {
             JsonSchemaTraverseUtils.traverse("根节点", bodyJsonSchema, (propertyName, jsonSchema, parentJsonSchema) -> {
                 JsonPropertyDescriptionValueDto jpdv = JsonUtils
                         .toObjectSkipNull(jsonSchema.getDescription(), JsonPropertyDescriptionValueDto.class);
-                if (jpdv != null) {
-                    jsonSchema.setDescription(jpdv.toStringPrettily());
-                }
                 Map<String, String> paramMap = new HashMap<>();
                 paramMap.put("required", "0");
                 paramMap.put("name", propertyName);
                 paramMap.put("example", "");
-                paramMap.put("desc", jpdv.toStringPrettily());
+                if (jpdv != null) {
+                    paramMap.put("desc", jpdv.toStringPrettily());
+                    jsonSchema.setDescription(jpdv.toStringPrettily());
+                } else {
+                    paramMap.put("desc", "");
+                }
                 list.add(paramMap);
             });
 
